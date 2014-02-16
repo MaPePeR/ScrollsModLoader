@@ -58,6 +58,7 @@
     <Compile Include="ScrollsExtension.cs" />
     <Compile Include="IOkStringsCancelCallback.cs" />
     <Compile Include="ModAssemblyAttributes.cs" />
+    <Compile Include="BaseMod2.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
