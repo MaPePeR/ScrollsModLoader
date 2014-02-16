@@ -8,7 +8,7 @@ namespace ScrollsModLoader.Interfaces
 	public delegate void ReplaceDelegate(InvocationInfo info, out object returnValue);
 	public interface IHookInformation {
 		void addBeforeInvokeHook(MethodDefinition m, BeforeInvokeDelegate hook);
-		void addAfterInvokeHook(MethodDefinition m, BeforeInvokeDelegate hook);
+		void addAfterInvokeHook(MethodDefinition m, AfterInvokeDelegate hook);
 		void addReplaceHook(MethodDefinition m, WantsToReplaceDelegate conditionDelegate, ReplaceDelegate hook);
 		TypeDefinitionCollection getTypes();
 		int getExeVersion ();
