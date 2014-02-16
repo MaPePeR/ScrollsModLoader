@@ -10,7 +10,6 @@
     <RootNamespace>ScrollsModLoader</RootNamespace>
     <AssemblyName>ScrollsModLoader</AssemblyName>
     <StartupObject>ScrollsModLoader.Patcher</StartupObject>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>Summoner.key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
@@ -122,6 +121,8 @@
     <Compile Include="Core\WebAPI\ExceptionLogger.cs" />
     <Compile Include="Patches\PatchPopups.cs" />
     <Compile Include="Core\WebAPI\WebClientTimeout.cs" />
+    <Compile Include="Core\HookInformation.cs" />
+    <Compile Include="Core\MethodDefinitionComparer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

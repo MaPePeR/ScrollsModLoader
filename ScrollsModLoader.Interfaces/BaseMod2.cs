@@ -13,7 +13,7 @@ namespace ScrollsModLoader.Interfaces
 		TypeDefinitionCollection getTypes();
 		int getExeVersion ();
 	}
-	public class BaseMod2
+	public abstract class BaseMod2
 	{
 		public BaseMod2 (IHookInformation hookInformation)
 		{
