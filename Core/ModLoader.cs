@@ -372,14 +372,10 @@ namespace ScrollsModLoader {
 		public Mod loadModStatic(String filePath) {
 			//get Scrolls Types list
 			TypeDefinitionCollection types = AssemblyFactory.GetAssembly (modLoaderPath+"Assembly-CSharp.dll").MainModule.Types;
-			return this._loadModStatic (types, filePath);
+			return this.loadModStatic (types, filePath);
 		}
 
-		public void loadModStatic(TypeDefinitionCollection types, String filepath) {
-			this._loadModStatic (types, filepath);
-		}
-
-		private Mod _loadModStatic(TypeDefinitionCollection types, String filepath) {
+		public Mod loadModStatic(TypeDefinitionCollection types, String filepath) {
 			ResolveEventHandler resolver = new ResolveEventHandler(CurrentDomainOnAssemblyResolve);
 			AppDomain.CurrentDomain.AssemblyResolve += resolver;
 
@@ -390,30 +386,88 @@ namespace ScrollsModLoader {
 				AppDomain.CurrentDomain.AssemblyResolve -= resolver;
 				return null;
 			}
-			Type modClass = (from _modClass in modAsm.GetTypes ()
-			                 where _modClass.InheritsFrom (typeof(ScrollsModLoader.Interfaces.BaseMod))
-			                 select _modClass).First();
-
-			//no mod classes??
-			if (modClass == null) {
-				AppDomain.CurrentDomain.AssemblyResolve -= resolver;
-				return null;
-			}
-
-			//get hooks
 			MethodDefinition[] hooks = null;
-			try {
-				hooks =(MethodDefinition[]) modClass.GetMethod ("GetHooks").Invoke (null, new object[] {
-					types,
-					SharedConstants.getExeVersionInt ()
-				});
-			} catch (Exception e) {
-				Console.WriteLine ("Error executing GetHooks for mod: " + filepath);
-				Console.WriteLine (e);
+			String modName = null;
+			int modVersion = 0;
+			//For some reason this breaks ...
+			CustomAttributeCollection customAttributes = AssemblyFactory.GetAssembly (filepath).CustomAttributes;
+			{
+				Console.WriteLine ("{0} has {1} Custom Attributes", filepath, customAttributes.Count);
+				foreach (CustomAttribute cad in customAttributes) {
+					Console.WriteLine (cad);
+					Console.WriteLine (cad.Constructor.ToString());
+					IDictionary d = cad.Fields;
+					Console.WriteLine ("Fields: {0}", d.Count);
+					foreach (object key in d) {
+						Console.WriteLine ("{0} = {1}", key, d [key]);
+					}
+				}
+			}
+			if (false) {
+				//Assuming Old-Mod
+
+				Type modClass = (from _modClass in modAsm.GetTypes ()
+				                where _modClass.InheritsFrom (typeof(ScrollsModLoader.Interfaces.BaseMod))
+				                select _modClass).First ();
+
+				//no mod classes??
+				if (modClass == null) {
+					AppDomain.CurrentDomain.AssemblyResolve -= resolver;
+					return null;
+				}
+
+				//get hooks
+				try {
+					hooks = (MethodDefinition[])modClass.GetMethod ("GetHooks").Invoke (null, new object[] {
+						types,
+						SharedConstants.getExeVersionInt ()
+					});
+				} catch (Exception e) {
+					Console.WriteLine ("Error executing GetHooks for mod: " + filepath);
+					Console.WriteLine (e);
+					AppDomain.CurrentDomain.AssemblyResolve -= resolver;
+					return null;
+				}
+				try {
+					modName = (String)modClass.GetMethod("GetName").Invoke(null, null);
+					modVersion = (int)modClass.GetMethod("GetVersion").Invoke(null, null);
+				} catch (Exception e){
+					Console.WriteLine ("Error getting Name or Version: ");
+					Console.WriteLine (e);
+					AppDomain.CurrentDomain.AssemblyResolve -= resolver;
+					return null;
+				}
+			} else if (customAttributes.Count  == 1) {
+				//New Mod
+				CustomAttribute ca = customAttributes [0];
+				if (false) {
+					IEnumerable<ModName> modNames =  modAsm.GetCustomAttributes (typeof(ModName), false).Cast<ModName> ();
+					if (modNames.Count() == 0) {
+						AppDomain.CurrentDomain.AssemblyResolve -= resolver;
+						Console.WriteLine ("Error: No ModName-Assembly Attribut");
+						return null;
+					} 
+					modName = modNames.First().name;
+
+					IEnumerable<ModVersion> modVersions =  modAsm.GetCustomAttributes (typeof(ModVersion), false).Cast<ModVersion> ();
+					if (modVersions.Count() == 0) {
+						AppDomain.CurrentDomain.AssemblyResolve -= resolver;
+						Console.WriteLine ("Error: No ModVersion-Assembly Attribut");
+						return null;
+					}
+					modVersion = modVersions .First().version;
+
+
+				} else {
+					Console.WriteLine ("Error: Illegal ModApiVersion-Attribute in Assembly. Supported Version: 2 \n{0}", filepath);
+					AppDomain.CurrentDomain.AssemblyResolve -= resolver;
+					return null;
+				}
+			} else {
+				Console.WriteLine ("Error: Multiple ModApiVersion-Attributes in Assembly. {0}", filepath);
 				AppDomain.CurrentDomain.AssemblyResolve -= resolver;
 				return null;
 			}
-
 
 			TypeDefinition[] typeDefs = new TypeDefinition[types.Count];
 			types.CopyTo(typeDefs, 0);
@@ -446,13 +500,11 @@ namespace ScrollsModLoader {
 			Mod mod = new Mod();
 			try {
 				mod.id = "00000000000000000000000000000000";
-				mod.name = (String)modClass.GetMethod("GetName").Invoke(null, null);
-				mod.version = (int)modClass.GetMethod("GetVersion").Invoke(null, null);
+				mod.name = modName;
+				mod.version = modVersion;
 				mod.versionCode = ""+mod.version;
 				mod.description = "";
 			} catch (Exception e){
-				Console.WriteLine ("Error getting Name or Version: ");
-				Console.WriteLine (e);
 				AppDomain.CurrentDomain.AssemblyResolve -= resolver;
 				return null;
 			}
@@ -736,7 +788,7 @@ namespace ScrollsModLoader {
 		}
 
 		public static int getVersion() {
-			return 4;
+			return 5;
 		}
 	}
 }
