@@ -389,6 +389,7 @@ namespace ScrollsModLoader {
 			MethodDefinition[] hooks = null;
 			String modName = null;
 			int modVersion = 0;
+			int modApiVersion = 1; //Old Mods
 			//For some reason this breaks ...
 			CustomAttributeCollection customAttributes = AssemblyFactory.GetAssembly (filepath).CustomAttributes;
 			{
@@ -401,9 +402,23 @@ namespace ScrollsModLoader {
 					foreach (object key in d) {
 						Console.WriteLine ("{0} = {1}", key, d [key]);
 					}
+					IList l = cad.ConstructorParameters;
+					Console.WriteLine ("ConstructorParameters: {0}", l.Count);
+					foreach(object o in l) {
+						Console.WriteLine ("Type: {0}, value = {1}",o.GetType(), o);
+					}
+					if (cad.Constructor.DeclaringType.FullName.Equals (typeof(ScrollsModLoader.Interfaces.ModApiVersion).FullName)) {
+						if (cad.ConstructorParameters.Count == 1 && cad.ConstructorParameters [0].GetType () == typeof(int)) {
+							Console.WriteLine ("Found ModApiVersion-Assembly Attribute");
+							modApiVersion = (int)cad.ConstructorParameters [0];
+							//Its a new Mod!
+						} else {
+							Console.WriteLine ("Parameters for ModApiVersion do not match");
+						}
+					}
 				}
 			}
-			if (false) {
+			if (modApiVersion == 1) {
 				//Assuming Old-Mod
 
 				Type modClass = (from _modClass in modAsm.GetTypes ()
@@ -437,34 +452,13 @@ namespace ScrollsModLoader {
 					AppDomain.CurrentDomain.AssemblyResolve -= resolver;
 					return null;
 				}
-			} else if (customAttributes.Count  == 1) {
+			} else if (modApiVersion  == 2) {
 				//New Mod
-				CustomAttribute ca = customAttributes [0];
-				if (false) {
-					IEnumerable<ModName> modNames =  modAsm.GetCustomAttributes (typeof(ModName), false).Cast<ModName> ();
-					if (modNames.Count() == 0) {
-						AppDomain.CurrentDomain.AssemblyResolve -= resolver;
-						Console.WriteLine ("Error: No ModName-Assembly Attribut");
-						return null;
-					} 
-					modName = modNames.First().name;
-
-					IEnumerable<ModVersion> modVersions =  modAsm.GetCustomAttributes (typeof(ModVersion), false).Cast<ModVersion> ();
-					if (modVersions.Count() == 0) {
-						AppDomain.CurrentDomain.AssemblyResolve -= resolver;
-						Console.WriteLine ("Error: No ModVersion-Assembly Attribut");
-						return null;
-					}
-					modVersion = modVersions .First().version;
-
-
-				} else {
-					Console.WriteLine ("Error: Illegal ModApiVersion-Attribute in Assembly. Supported Version: 2 \n{0}", filepath);
-					AppDomain.CurrentDomain.AssemblyResolve -= resolver;
-					return null;
+				foreach (CustomAttribute cad in customAttributes) {
+					//TODO find name and version
 				}
 			} else {
-				Console.WriteLine ("Error: Multiple ModApiVersion-Attributes in Assembly. {0}", filepath);
+				Console.WriteLine ("Error: Illegal ModApiVersion-Attribute in Assembly. Supported Versions: 1 and 2 \n{0}", filepath);
 				AppDomain.CurrentDomain.AssemblyResolve -= resolver;
 				return null;
 			}
