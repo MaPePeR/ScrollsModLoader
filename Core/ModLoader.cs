@@ -455,8 +455,31 @@ namespace ScrollsModLoader {
 			} else if (modApiVersion  == 2) {
 				//New Mod
 				foreach (CustomAttribute cad in customAttributes) {
-					//TODO find name and version
+					if (cad.Constructor.DeclaringType.FullName.Equals(typeof(ScrollsModLoader.Interfaces.ModName).FullName)) {
+						if (cad.ConstructorParameters.Count == 1 && cad.ConstructorParameters [0].GetType () == typeof(string)) {
+							if (modName == null) {
+								modName = (string)cad.ConstructorParameters [0];
+							} else {
+								Console.WriteLine ("Multiple ModName Assembly Attributes!");
+							}
+						} else {
+							Console.WriteLine ("ModName-AssemblyAttribute with illegal parameter");
+						}
+					}
+					if (cad.Constructor.DeclaringType.FullName.Equals(typeof(ScrollsModLoader.Interfaces.ModVersion).FullName)) {
+						if (cad.ConstructorParameters.Count == 1 && cad.ConstructorParameters [0].GetType () == typeof(int)) {
+							if (modVersion == 0) {
+								modName = (int)cad.ConstructorParameters [0];
+							} else {
+								Console.WriteLine ("Multiple ModVersion Assembly Attributes!");
+							}
+						} else {
+							Console.WriteLine ("ModVersion-AssemblyAttribute with illegal parameter");
+						}
+					}
 				}
+
+				//TODO Instantiate mod and read Hooks from HookInformation 
 			} else {
 				Console.WriteLine ("Error: Illegal ModApiVersion-Attribute in Assembly. Supported Versions: 1 and 2 \n{0}", filepath);
 				AppDomain.CurrentDomain.AssemblyResolve -= resolver;
