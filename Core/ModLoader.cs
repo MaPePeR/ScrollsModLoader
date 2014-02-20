@@ -395,7 +395,7 @@ namespace ScrollsModLoader {
 			{
 				Console.WriteLine ("{0} has {1} Custom Attributes", filepath, customAttributes.Count);
 				foreach (CustomAttribute cad in customAttributes) {
-					Console.WriteLine (cad);
+					/*	Console.WriteLine (cad);
 					Console.WriteLine (cad.Constructor.ToString());
 					IDictionary d = cad.Fields;
 					Console.WriteLine ("Fields: {0}", d.Count);
@@ -406,7 +406,7 @@ namespace ScrollsModLoader {
 					Console.WriteLine ("ConstructorParameters: {0}", l.Count);
 					foreach(object o in l) {
 						Console.WriteLine ("Type: {0}, value = {1}",o.GetType(), o);
-					}
+					}*/
 					if (cad.Constructor.DeclaringType.FullName.Equals (typeof(ScrollsModLoader.Interfaces.ModApiVersion).FullName)) {
 						if (cad.ConstructorParameters.Count == 1 && cad.ConstructorParameters [0].GetType () == typeof(int)) {
 							Console.WriteLine ("Found ModApiVersion-Assembly Attribute");
