@@ -469,7 +469,7 @@ namespace ScrollsModLoader {
 					if (cad.Constructor.DeclaringType.FullName.Equals(typeof(ScrollsModLoader.Interfaces.ModVersion).FullName)) {
 						if (cad.ConstructorParameters.Count == 1 && cad.ConstructorParameters [0].GetType () == typeof(int)) {
 							if (modVersion == 0) {
-								modName = (int)cad.ConstructorParameters [0];
+								modVersion = (int)cad.ConstructorParameters [0];
 							} else {
 								Console.WriteLine ("Multiple ModVersion Assembly Attributes!");
 							}
